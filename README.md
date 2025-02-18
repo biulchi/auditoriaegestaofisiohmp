@@ -54,13 +54,6 @@ cp .env.example .env
 npm run dev
 ```
 
-## Variáveis de Ambiente
-
-```env
-VITE_SUPABASE_URL=sua_url_supabase
-VITE_SUPABASE_ANON_KEY=sua_chave_anonima_supabase
-```
-
 ## Licença
 
 MIT
