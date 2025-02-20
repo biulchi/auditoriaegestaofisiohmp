@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { FileSpreadsheet } from "lucide-react";
+import { FileSpreadsheet, Trash2 } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useToast } from "@/components/ui/use-toast";
 import { exportToExcel, formatAuditData } from "@/lib/export-utils";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -129,21 +131,54 @@ export function AuditDashboard() {
               </SelectContent>
             </Select>
           </div>
-          <Button
-            onClick={() => {
-              const exportData = formatAuditData(audits);
-              exportToExcel(
-                exportData,
-                `auditoria-vm-${months[selectedMonth - 1].label}-${selectedYear}`,
-                "Auditoria VM",
-              );
-            }}
-            variant="outline"
-            className="flex items-center gap-2"
-          >
-            <FileSpreadsheet className="h-4 w-4" />
-            Exportar Excel
-          </Button>
+          <div className="flex gap-2">
+            <ConfirmDialog
+              title="Resetar Dados"
+              description="Tem certeza que deseja apagar todos os dados de auditoria? Esta ação não pode ser desfeita."
+              trigger={
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Trash2 className="h-4 w-4" />
+                  Resetar Dados
+                </Button>
+              }
+              onConfirm={async () => {
+                try {
+                  const { error } = await supabase
+                    .from("mechanical_ventilation_audits")
+                    .delete()
+                    .neq("id", 0);
+                  if (error) throw error;
+                  await fetchAudits();
+                  toast({
+                    title: "Dados resetados com sucesso",
+                    description: "Todos os dados de auditoria foram apagados",
+                  });
+                } catch (error) {
+                  console.error("Error resetting data:", error);
+                  toast({
+                    title: "Erro ao resetar dados",
+                    description: "Ocorreu um erro ao tentar apagar os dados",
+                    variant: "destructive",
+                  });
+                }
+              }}
+            />
+            <Button
+              onClick={() => {
+                const exportData = formatAuditData(audits);
+                exportToExcel(
+                  exportData,
+                  `auditoria-vm-${months[selectedMonth - 1].label}-${selectedYear}`,
+                  "Auditoria VM",
+                );
+              }}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <FileSpreadsheet className="h-4 w-4" />
+              Exportar Excel
+            </Button>
+          </div>
         </div>
       </Card>
 
